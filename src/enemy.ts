@@ -1,6 +1,6 @@
 import { Container, Graphics } from "pixi.js";
 
-export class Projectile extends Container {
+export class Enemy extends Container {
   velocity = {
     x: 0,
     y: 0,
@@ -13,8 +13,8 @@ export class Projectile extends Container {
 
   setup() {
     const view = new Graphics();
-    view.arc(0, 0, 10, 0, Math.PI * 2);
-    view.fill({ color: "white" });
+    view.arc(0, 0, 30, 0, Math.PI * 2);
+    view.fill({ color: "red" });
     this.addChild(view);
   }
 
