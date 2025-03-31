@@ -5,6 +5,7 @@ export class Projectile extends Container {
     x: 0,
     y: 0,
   };
+  radius = 10;
   constructor(velocity: { x: number; y: number }) {
     super();
 
@@ -13,7 +14,7 @@ export class Projectile extends Container {
 
   setup() {
     const view = new Graphics();
-    view.arc(0, 0, 10, 0, Math.PI * 2);
+    view.arc(0, 0, this.radius, 0, Math.PI * 2);
     view.fill({ color: "white" });
     this.addChild(view);
   }

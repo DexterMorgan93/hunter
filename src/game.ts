@@ -81,9 +81,20 @@ export class Game extends Container {
       this.spawnEnemies();
     }
 
-    this.enemies.forEach((item) => {
+    this.enemies.forEach((item, enemyIndex) => {
       item.handleUpdate();
       this.addChild(item);
+
+      this.projectiles.forEach((projectile, projectileIndex) => {
+        const dist = Math.hypot(projectile.x - item.x, projectile.y - item.y);
+        if (dist - projectile.radius - item.radius < 0) {
+          this.projectiles.splice(projectileIndex, 1);
+          this.enemies.splice(enemyIndex, 1);
+
+          this.removeChild(projectile);
+          this.removeChild(item);
+        }
+      });
     });
   }
 }
