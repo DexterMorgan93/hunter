@@ -17,7 +17,9 @@ async function setup() {
 
   const game = new Game(app);
   app.stage.addChild(game);
-  app.ticker.add(game.handleUpdate, game);
+  app.ticker.add((delta) => {
+    game.handleUpdate(delta.deltaMS);
+  });
 })();
 
 initDevtools({

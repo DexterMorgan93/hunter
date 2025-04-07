@@ -1,7 +1,20 @@
-import { Application, Container, Rectangle } from "pixi.js";
+import {
+  Application,
+  Container,
+  FederatedPointerEvent,
+  Rectangle,
+} from "pixi.js";
 import { Player } from "./player";
 import { Projectile } from "./projectile";
 import { Enemy } from "./enemy";
+
+const click = {
+  tap: {
+    clicked: false,
+    x: 0,
+    y: 0,
+  },
+};
 
 export class Game extends Container {
   app: Application;
@@ -9,6 +22,8 @@ export class Game extends Container {
   projectiles: Projectile[] = [];
   enemies: Enemy[] = [];
   elapsedFrames = 0;
+  shootCooldown = 0;
+  fireRate = 100;
 
   constructor(app: Application) {
     super();
@@ -29,21 +44,50 @@ export class Game extends Container {
       app.screen.width,
       app.screen.height
     );
-    this.area.addEventListener("click", (e) => {
-      const angle = Math.atan2(
-        e.clientY - app.screen.height / 2,
-        e.clientX - app.screen.width / 2
-      );
-
-      const projectile = new Projectile({
-        x: Math.cos(angle) * 6,
-        y: Math.sin(angle) * 6,
-      });
-      projectile.setup();
-      projectile.position.set(app.screen.width / 2, app.screen.height / 2);
-      this.projectiles.push(projectile);
-    });
+    this.handlePointerDown();
+    this.handlePointerMove();
+    this.handlePointerUp();
     this.addChild(this.area);
+  }
+
+  handlePointerDown() {
+    this.area.addEventListener("pointerdown", (e) => {
+      click.tap.clicked = true;
+      console.log("e.clientX", e.pointerId);
+      click.tap.x = e.clientX;
+      click.tap.y = e.clientY;
+    });
+  }
+  handlePointerMove() {
+    this.area.addEventListener("pointermove", (e) => {
+      if (click.tap.clicked) {
+        click.tap.x = e.clientX;
+        click.tap.y = e.clientY;
+      }
+    });
+  }
+  handlePointerUp() {
+    this.area.addEventListener("pointerup", () => {
+      click.tap.clicked = false;
+    });
+  }
+
+  updateProjectles(x: number, y: number) {
+    const angle = Math.atan2(
+      y - this.app.screen.height / 2,
+      x - this.app.screen.width / 2
+    );
+
+    const projectile = new Projectile({
+      x: Math.cos(angle) * 6,
+      y: Math.sin(angle) * 6,
+    });
+    projectile.setup();
+    projectile.position.set(
+      this.app.screen.width / 2,
+      this.app.screen.height / 2
+    );
+    this.projectiles.push(projectile);
   }
 
   spawnEnemies() {
@@ -70,7 +114,7 @@ export class Game extends Container {
     this.enemies.push(enemy1);
   }
 
-  handleUpdate() {
+  handleUpdate(deltaMS: number) {
     this.elapsedFrames++;
     const { x, y } = this;
     const left = x;
@@ -81,6 +125,14 @@ export class Game extends Container {
       item.handleUpdate();
       this.addChild(item);
     });
+
+    if (click.tap.clicked) {
+      this.shootCooldown -= deltaMS;
+      if (this.shootCooldown <= 0) {
+        this.shootCooldown = this.fireRate;
+        this.updateProjectles(click.tap.x, click.tap.y);
+      }
+    }
 
     if (this.elapsedFrames % 60 === 0) {
       this.spawnEnemies();
