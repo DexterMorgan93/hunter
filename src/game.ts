@@ -36,8 +36,8 @@ export class Game extends Container {
       );
 
       const projectile = new Projectile({
-        x: Math.cos(angle),
-        y: Math.sin(angle),
+        x: Math.cos(angle) * 6,
+        y: Math.sin(angle) * 6,
       });
       projectile.setup();
       projectile.position.set(app.screen.width / 2, app.screen.height / 2);
@@ -72,6 +72,11 @@ export class Game extends Container {
 
   handleUpdate() {
     this.elapsedFrames++;
+    const { x, y } = this;
+    const left = x;
+    const top = y;
+    const right = x + this.app.screen.width;
+    const bottom = y + this.app.screen.height;
     this.projectiles.forEach((item) => {
       item.handleUpdate();
       this.addChild(item);
@@ -85,6 +90,11 @@ export class Game extends Container {
       item.handleUpdate();
       this.addChild(item);
 
+      if (item.isOutOfViewport({ left, top, right, bottom })) {
+        this.removeChild(item);
+        this.enemies.splice(enemyIndex, 1);
+      }
+
       this.projectiles.forEach((projectile, projectileIndex) => {
         const dist = Math.hypot(projectile.x - item.x, projectile.y - item.y);
         if (dist - projectile.radius - item.radius < 0) {
@@ -93,6 +103,11 @@ export class Game extends Container {
 
           this.removeChild(projectile);
           this.removeChild(item);
+        }
+
+        if (projectile.isOutOfViewport({ left, top, right, bottom })) {
+          this.removeChild(projectile);
+          this.projectiles.splice(projectileIndex, 1);
         }
       });
     });
