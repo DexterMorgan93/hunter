@@ -19,7 +19,7 @@ export class Game extends Container {
   projectiles: Projectile[] = [];
   enemyFactory: EnemyFactory;
   enemyContainer: Container;
-  enemySpeed = 5;
+  enemySpeed = 1;
   elapsedFrames = 0;
   shootCooldown = 0;
   fireRate = 100;
@@ -191,10 +191,15 @@ export class Game extends Container {
         const dist = Math.hypot(projectile.x - enemy.x, projectile.y - enemy.y);
 
         if (dist - projectile.radius - enemy.radius < 0) {
+          enemy.takeDamage(1);
           this.projectiles.splice(projectileIndex, 1);
+          if (this.children.includes(projectile)) {
+            this.removeChild(projectile);
+          }
 
-          this.removeChild(projectile);
-          this.enemyContainer.removeChild(enemy);
+          if (enemy.getHealth === 0) {
+            this.enemyContainer.removeChild(enemy);
+          }
         }
       });
     }

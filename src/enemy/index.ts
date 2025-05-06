@@ -4,16 +4,19 @@ export class Enemy extends Container {
   velocity: { x: number; y: number };
   radius: number;
   color: number;
+  health: number;
 
   constructor(
     velocity: { x: number; y: number },
     radius: number,
-    color: number
+    color: number,
+    health: number
   ) {
     super();
     this.velocity = velocity;
     this.radius = radius;
     this.color = color;
+    this.health = health;
   }
 
   setup() {
@@ -45,5 +48,13 @@ export class Enemy extends Container {
     const pBottom = this.y + this.radius;
 
     return pRight < left || pLeft > right || pBottom < top || pTop > bottom;
+  }
+
+  takeDamage(damage: number) {
+    this.health -= damage;
+  }
+
+  get getHealth() {
+    return this.health;
   }
 }
