@@ -14,6 +14,7 @@ const click = {
 
 export class Game extends Container {
   app: Application;
+  player: Player;
   area: Container;
   projectiles: Projectile[] = [];
   enemyFactory: EnemyFactory;
@@ -22,15 +23,16 @@ export class Game extends Container {
   elapsedFrames = 0;
   shootCooldown = 0;
   fireRate = 100;
+  fireSpeed = 10;
 
   constructor(app: Application) {
     super();
     this.app = app;
 
-    const player = new Player();
-    player.position.set(app.screen.width / 2, app.screen.height / 2);
-    player.setup();
-    this.addChild(player);
+    this.player = new Player();
+    this.player.position.set(200, 737);
+    this.player.setup();
+    this.addChild(this.player);
 
     this.enemyContainer = new Container();
     this.addChild(this.enemyContainer);
@@ -75,19 +77,16 @@ export class Game extends Container {
 
   updateProjectles(x: number, y: number) {
     const angle = Math.atan2(
-      y - this.app.screen.height / 2,
-      x - this.app.screen.width / 2
+      y - this.player.position.y,
+      x - this.player.position.x
     );
 
     const projectile = new Projectile({
-      x: Math.cos(angle) * 6,
-      y: Math.sin(angle) * 6,
+      x: Math.cos(angle) * this.fireSpeed,
+      y: Math.sin(angle) * this.fireSpeed,
     });
     projectile.setup();
-    projectile.position.set(
-      this.app.screen.width / 2,
-      this.app.screen.height / 2
-    );
+    projectile.position.set(this.player.position.x, this.player.position.y);
     this.projectiles.push(projectile);
   }
 
