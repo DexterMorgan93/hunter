@@ -1,9 +1,4 @@
-import {
-  Application,
-  Container,
-  FederatedPointerEvent,
-  Rectangle,
-} from "pixi.js";
+import { Application, Container, Rectangle } from "pixi.js";
 import { Player } from "./player";
 import { Projectile } from "./projectile";
 import { Enemy } from "./enemy";
@@ -21,6 +16,7 @@ export class Game extends Container {
   area: Container;
   projectiles: Projectile[] = [];
   enemies: Enemy[] = [];
+  enemySpeed = 5;
   elapsedFrames = 0;
   shootCooldown = 0;
   fireRate = 100;
@@ -93,6 +89,7 @@ export class Game extends Container {
   spawnEnemies() {
     let x = 0;
     let y = 0;
+
     if (Math.random() < 0.5) {
       x = Math.random() < 0.5 ? 0 - 30 : this.app.screen.width + 30;
       y = Math.random() * this.app.screen.height;
@@ -100,17 +97,21 @@ export class Game extends Container {
       x = Math.random() * this.app.screen.width;
       y = Math.random() < 0.5 ? 0 - 30 : this.app.screen.height + 30;
     }
-    const angle = Math.atan2(
-      this.app.screen.height / 2 - y,
-      this.app.screen.width / 2 - x
-    );
+
+    // Генерация случайного угла
+    const angle = Math.random() * Math.PI * 2;
+
+    // Вычисление скорости на основе угла
+    const velocityX = Math.cos(angle) * this.enemySpeed;
+    const velocityY = Math.sin(angle) * this.enemySpeed;
 
     const enemy1 = new Enemy({
-      x: Math.cos(angle),
-      y: Math.sin(angle),
+      x: velocityX,
+      y: velocityY,
     });
     enemy1.setup();
     enemy1.position.set(x, y);
+
     this.enemies.push(enemy1);
   }
 
