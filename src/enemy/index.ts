@@ -43,6 +43,7 @@ export class Enemy extends Container {
     const pTop = this.y - this.radius;
     const pRight = this.x + this.radius;
     const pBottom = this.y + this.radius;
+
     return pRight < left || pLeft > right || pBottom < top || pTop > bottom;
   }
 }

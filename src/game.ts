@@ -17,7 +17,6 @@ export class Game extends Container {
   area: Container;
   projectiles: Projectile[] = [];
   enemyFactory: EnemyFactory;
-  enemies: Enemy[] = [];
   enemyContainer: Container;
   enemySpeed = 5;
   elapsedFrames = 0;
@@ -56,7 +55,6 @@ export class Game extends Container {
   handlePointerDown() {
     this.area.addEventListener("pointerdown", (e) => {
       click.tap.clicked = true;
-      console.log("e.clientX", e.pointerId);
       click.tap.x = e.clientX;
       click.tap.y = e.clientY;
     });
@@ -124,17 +122,13 @@ export class Game extends Container {
     const randomEnemyType =
       enemyTypes[Math.floor(Math.random() * enemyTypes.length)];
 
-    console.log("spawnEnemies"); // Для проверки
-
     // Создание случайного врага
     const enemy = randomEnemyType({
       x: velocityX,
       y: velocityY,
     });
-    enemy.position.set(x, y);
-
     this.enemyContainer.addChild(enemy);
-    this.enemies.push(enemy);
+    enemy.position.set(x, y);
   }
 
   handleUpdate(deltaMS: number) {
@@ -159,26 +153,15 @@ export class Game extends Container {
         this.updateProjectles(click.tap.x, click.tap.y);
       }
     }
-    // console.log("this.enemies.length", this.enemies.length);
 
-    // handle enemies
-    for (
-      let enemyIndex = this.enemies.length - 1;
-      enemyIndex >= 0;
-      enemyIndex--
-    ) {
-      const enemy = this.enemies[enemyIndex];
-      console.log("Updating enemy", enemy.constructor.name);
-      this.enemyContainer.addChild(enemy);
+    this.enemyContainer.children.forEach((child) => {
+      const enemy = child as Enemy;
       enemy.handleUpdate();
 
-      // Удаляем врага, если он выходит за границы
       if (enemy.isOutOfViewport({ left, top, right, bottom })) {
         this.enemyContainer.removeChild(enemy);
-        this.enemies.splice(enemyIndex, 1);
-        continue;
       }
-    }
+    });
 
     // handle projectiles
     for (
@@ -204,23 +187,17 @@ export class Game extends Container {
       }
 
       // Проверка столкновения пуль с врагами
-      for (
-        let enemyIndex = this.enemies.length - 1;
-        enemyIndex >= 0;
-        enemyIndex--
-      ) {
-        const enemy = this.enemies[enemyIndex];
+      this.enemyContainer.children.forEach((child) => {
+        const enemy = child as Enemy;
         const dist = Math.hypot(projectile.x - enemy.x, projectile.y - enemy.y);
 
         if (dist - projectile.radius - enemy.radius < 0) {
           this.projectiles.splice(projectileIndex, 1);
-          this.enemies.splice(enemyIndex, 1);
 
           this.removeChild(projectile);
           this.enemyContainer.removeChild(enemy);
-          break;
         }
-      }
+      });
     }
   }
 }
