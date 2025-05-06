@@ -1,6 +1,7 @@
 import { Application, Container, Rectangle } from "pixi.js";
 import { Player } from "./player";
 import { Projectile } from "./projectile";
+import { EnemyFactory } from "./enemy/enemy-factory";
 import { Enemy } from "./enemy";
 
 const click = {
@@ -15,7 +16,9 @@ export class Game extends Container {
   app: Application;
   area: Container;
   projectiles: Projectile[] = [];
+  enemyFactory: EnemyFactory;
   enemies: Enemy[] = [];
+  enemyContainer: Container;
   enemySpeed = 5;
   elapsedFrames = 0;
   shootCooldown = 0;
@@ -29,6 +32,10 @@ export class Game extends Container {
     player.position.set(app.screen.width / 2, app.screen.height / 2);
     player.setup();
     this.addChild(player);
+
+    this.enemyContainer = new Container();
+    this.addChild(this.enemyContainer);
+    this.enemyFactory = new EnemyFactory(this);
 
     this.area = new Container();
     this.area.width = app.screen.width;
@@ -98,25 +105,43 @@ export class Game extends Container {
       y = Math.random() < 0.5 ? 0 - 30 : this.app.screen.height + 30;
     }
 
-    // Генерация случайного угла
-    const angle = Math.random() * Math.PI * 2;
+    const angle = Math.atan2(
+      this.app.screen.height / 2 - y,
+      this.app.screen.width / 2 - x
+    );
+
+    const enemyTypes = [
+      this.enemyFactory.createSmall.bind(this.enemyFactory),
+      this.enemyFactory.createMedium.bind(this.enemyFactory),
+      this.enemyFactory.createBig.bind(this.enemyFactory),
+    ];
 
     // Вычисление скорости на основе угла
     const velocityX = Math.cos(angle) * this.enemySpeed;
     const velocityY = Math.sin(angle) * this.enemySpeed;
 
-    const enemy1 = new Enemy({
+    // Случайный выбор типа врага
+    const randomEnemyType =
+      enemyTypes[Math.floor(Math.random() * enemyTypes.length)];
+
+    console.log("spawnEnemies"); // Для проверки
+
+    // Создание случайного врага
+    const enemy = randomEnemyType({
       x: velocityX,
       y: velocityY,
     });
-    enemy1.setup();
-    enemy1.position.set(x, y);
+    enemy.position.set(x, y);
 
-    this.enemies.push(enemy1);
+    this.enemyContainer.addChild(enemy);
+    this.enemies.push(enemy);
   }
 
   handleUpdate(deltaMS: number) {
     this.elapsedFrames++;
+    if (this.elapsedFrames % 60 === 0) {
+      this.spawnEnemies();
+    }
     const { x, y } = this;
     const left = x;
     const top = y;
@@ -134,10 +159,7 @@ export class Game extends Container {
         this.updateProjectles(click.tap.x, click.tap.y);
       }
     }
-
-    if (this.elapsedFrames % 60 === 0) {
-      this.spawnEnemies();
-    }
+    // console.log("this.enemies.length", this.enemies.length);
 
     // handle enemies
     for (
@@ -146,12 +168,13 @@ export class Game extends Container {
       enemyIndex--
     ) {
       const enemy = this.enemies[enemyIndex];
+      console.log("Updating enemy", enemy.constructor.name);
+      this.enemyContainer.addChild(enemy);
       enemy.handleUpdate();
-      this.addChild(enemy);
 
       // Удаляем врага, если он выходит за границы
       if (enemy.isOutOfViewport({ left, top, right, bottom })) {
-        this.removeChild(enemy);
+        this.enemyContainer.removeChild(enemy);
         this.enemies.splice(enemyIndex, 1);
         continue;
       }
@@ -194,7 +217,7 @@ export class Game extends Container {
           this.enemies.splice(enemyIndex, 1);
 
           this.removeChild(projectile);
-          this.removeChild(enemy);
+          this.enemyContainer.removeChild(enemy);
           break;
         }
       }

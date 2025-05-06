@@ -1,0 +1,7 @@
+import { Enemy } from "..";
+
+export class Big extends Enemy {
+  constructor(velocity: { x: number; y: number }) {
+    super(velocity, 30, 0x0000ff);
+  }
+}

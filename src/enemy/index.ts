@@ -1,28 +1,31 @@
 import { Container, Graphics } from "pixi.js";
 
 export class Enemy extends Container {
-  velocity = {
-    x: 0,
-    y: 0,
-  };
-  radius = 30;
+  velocity: { x: number; y: number };
+  radius: number;
+  color: number;
 
-  constructor(velocity: { x: number; y: number }) {
+  constructor(
+    velocity: { x: number; y: number },
+    radius: number,
+    color: number
+  ) {
     super();
-
     this.velocity = velocity;
+    this.radius = radius;
+    this.color = color;
   }
 
   setup() {
     const view = new Graphics();
     view.arc(0, 0, this.radius, 0, Math.PI * 2);
-    view.fill({ color: "red" });
+    view.fill({ color: this.color });
     this.addChild(view);
   }
 
   handleUpdate() {
-    this.x += this.velocity.x;
-    this.y += this.velocity.y;
+    this.position.x += this.velocity.x;
+    this.position.y += this.velocity.y;
   }
 
   isOutOfViewport({
@@ -40,18 +43,6 @@ export class Enemy extends Container {
     const pTop = this.y - this.radius;
     const pRight = this.x + this.radius;
     const pBottom = this.y + this.radius;
-    if (pRight < left) {
-      return true;
-    }
-    if (pLeft > right) {
-      return true;
-    }
-    if (pBottom < top) {
-      return true;
-    }
-    if (pTop > bottom) {
-      return true;
-    }
-    return false;
+    return pRight < left || pLeft > right || pBottom < top || pTop > bottom;
   }
 }
