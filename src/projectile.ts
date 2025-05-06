@@ -23,34 +23,4 @@ export class Projectile extends Container {
     this.x += this.velocity.x;
     this.y += this.velocity.y;
   }
-
-  isOutOfViewport({
-    left,
-    top,
-    right,
-    bottom,
-  }: {
-    left: number;
-    top: number;
-    right: number;
-    bottom: number;
-  }): boolean {
-    const pLeft = this.x - this.radius;
-    const pTop = this.y - this.radius;
-    const pRight = this.x + this.radius;
-    const pBottom = this.y + this.radius;
-    if (pRight < left) {
-      return true;
-    }
-    if (pLeft > right) {
-      return true;
-    }
-    if (pBottom < top) {
-      return true;
-    }
-    if (pTop > bottom) {
-      return true;
-    }
-    return false;
-  }
 }

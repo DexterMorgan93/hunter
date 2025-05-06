@@ -138,30 +138,65 @@ export class Game extends Container {
       this.spawnEnemies();
     }
 
-    this.enemies.forEach((item, enemyIndex) => {
-      item.handleUpdate();
-      this.addChild(item);
+    // handle enemies
+    for (
+      let enemyIndex = this.enemies.length - 1;
+      enemyIndex >= 0;
+      enemyIndex--
+    ) {
+      const enemy = this.enemies[enemyIndex];
+      enemy.handleUpdate();
+      this.addChild(enemy);
 
-      if (item.isOutOfViewport({ left, top, right, bottom })) {
-        this.removeChild(item);
+      // Удаляем врага, если он выходит за границы
+      if (enemy.isOutOfViewport({ left, top, right, bottom })) {
+        this.removeChild(enemy);
         this.enemies.splice(enemyIndex, 1);
+        continue;
+      }
+    }
+
+    // handle projectiles
+    for (
+      let projectileIndex = this.projectiles.length - 1;
+      projectileIndex >= 0;
+      projectileIndex--
+    ) {
+      const projectile = this.projectiles[projectileIndex];
+
+      // Проверка столкновения пули с границами экрана
+      if (
+        projectile.x - projectile.radius < left ||
+        projectile.x + projectile.radius > right
+      ) {
+        projectile.velocity.x *= -1;
       }
 
-      this.projectiles.forEach((projectile, projectileIndex) => {
-        const dist = Math.hypot(projectile.x - item.x, projectile.y - item.y);
-        if (dist - projectile.radius - item.radius < 0) {
+      if (
+        projectile.y - projectile.radius < top ||
+        projectile.y + projectile.radius > bottom
+      ) {
+        projectile.velocity.y *= -1;
+      }
+
+      // Проверка столкновения пуль с врагами
+      for (
+        let enemyIndex = this.enemies.length - 1;
+        enemyIndex >= 0;
+        enemyIndex--
+      ) {
+        const enemy = this.enemies[enemyIndex];
+        const dist = Math.hypot(projectile.x - enemy.x, projectile.y - enemy.y);
+
+        if (dist - projectile.radius - enemy.radius < 0) {
           this.projectiles.splice(projectileIndex, 1);
           this.enemies.splice(enemyIndex, 1);
 
           this.removeChild(projectile);
-          this.removeChild(item);
+          this.removeChild(enemy);
+          break;
         }
-
-        if (projectile.isOutOfViewport({ left, top, right, bottom })) {
-          this.removeChild(projectile);
-          this.projectiles.splice(projectileIndex, 1);
-        }
-      });
-    });
+      }
+    }
   }
 }
