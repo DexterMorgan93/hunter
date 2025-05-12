@@ -25,7 +25,8 @@ export class Game extends Container {
   shootCooldown = 0;
   fireRate = 100;
   fireSpeed = 10;
-  button: Button;
+  skillsBtnsContainer: Container;
+  targetButton!: Button;
 
   constructor(app: Application) {
     super();
@@ -55,16 +56,11 @@ export class Game extends Container {
     this.handlePointerUp();
     this.addChild(this.area);
 
-    const buttonView = new Graphics();
-    buttonView.fill({ color: 0xffffff, width: 100, height: 50 });
-    buttonView.rect(0, 0, 100, 50);
-    buttonView.stroke();
-
-    this.button = new Button(buttonView);
-    this.button.view.position.set(100, 50);
-    this.button.onPress.connect(() => console.log("Button pressed!"));
-
-    this.addChild(this.button.view);
+    this.skillsBtnsContainer = new Container();
+    this.skillsBtnsContainer.position.set(0, 300);
+    this.addChild(this.skillsBtnsContainer);
+    this.setupSkillButtons();
+    this.targetButton.onPress.connect(() => console.log("Button pressed!"));
   }
 
   handlePointerDown() {
@@ -86,6 +82,17 @@ export class Game extends Container {
     this.area.addEventListener("pointerup", () => {
       click.tap.clicked = false;
     });
+  }
+
+  setupSkillButtons() {
+    const buttonView = new Graphics();
+
+    buttonView.rect(0, 0, 50, 50).fill({ color: 0xffffff });
+
+    this.targetButton = new Button(buttonView);
+    this.targetButton.view.position.set(10, 50);
+
+    this.skillsBtnsContainer.addChild(this.targetButton.view);
   }
 
   updateProjectles(x: number, y: number) {
