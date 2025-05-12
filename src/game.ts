@@ -1,8 +1,9 @@
-import { Application, Container, Rectangle } from "pixi.js";
+import { Application, Container, Graphics, Rectangle } from "pixi.js";
 import { Player } from "./player";
 import { Projectile } from "./projectile";
 import { EnemyFactory } from "./enemy/enemy-factory";
 import { Enemy } from "./enemy";
+import { Button } from "@pixi/ui";
 
 const click = {
   tap: {
@@ -24,6 +25,7 @@ export class Game extends Container {
   shootCooldown = 0;
   fireRate = 100;
   fireSpeed = 10;
+  button: Button;
 
   constructor(app: Application) {
     super();
@@ -52,6 +54,17 @@ export class Game extends Container {
     this.handlePointerMove();
     this.handlePointerUp();
     this.addChild(this.area);
+
+    const buttonView = new Graphics();
+    buttonView.fill({ color: 0xffffff, width: 100, height: 50 });
+    buttonView.rect(0, 0, 100, 50);
+    buttonView.stroke();
+
+    this.button = new Button(buttonView);
+    this.button.view.position.set(100, 50);
+    this.button.onPress.connect(() => console.log("Button pressed!"));
+
+    this.addChild(this.button.view);
   }
 
   handlePointerDown() {
