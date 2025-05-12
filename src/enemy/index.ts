@@ -1,22 +1,27 @@
 import { Container, Graphics } from "pixi.js";
 
+export type EnemyType = "small" | "medium" | "big";
+
 export class Enemy extends Container {
   velocity: { x: number; y: number };
   radius: number;
   color: number;
   health: number;
+  type: EnemyType;
 
   constructor(
     velocity: { x: number; y: number },
     radius: number,
     color: number,
-    health: number
+    health: number,
+    type: EnemyType
   ) {
     super();
     this.velocity = velocity;
     this.radius = radius;
     this.color = color;
     this.health = health;
+    this.type = type;
   }
 
   setup() {

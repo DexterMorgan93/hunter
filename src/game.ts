@@ -2,7 +2,7 @@ import { Application, Container, Graphics, Rectangle } from "pixi.js";
 import { Player } from "./player";
 import { Projectile } from "./projectile";
 import { EnemyFactory } from "./enemy/enemy-factory";
-import { Enemy } from "./enemy";
+import { Enemy, EnemyType } from "./enemy";
 import { Button } from "@pixi/ui";
 
 const click = {
@@ -27,6 +27,8 @@ export class Game extends Container {
   fireSpeed = 10;
   skillsBtnsContainer: Container;
   targetButton!: Button;
+  chosenEnemyType!: EnemyType;
+  chosenEnemy!: Enemy | null;
 
   constructor(app: Application) {
     super();
@@ -79,8 +81,22 @@ export class Game extends Container {
     });
   }
   handlePointerUp() {
-    this.area.addEventListener("pointerup", () => {
+    this.area.addEventListener("pointerup", (e) => {
       click.tap.clicked = false;
+
+      // this.enemyContainer.children.forEach((child) => {
+      //   const enemy = child as Enemy;
+      //   if (
+      //     e.clientX >= enemy.x &&
+      //     e.clientX <= enemy.x + enemy.width &&
+      //     e.clientY >= enemy.y &&
+      //     e.clientY <= enemy.y + enemy.width
+      //   ) {
+      //     this.chosenEnemyType = enemy.type;
+      //     this.chosenEnemy = enemy;
+      //     click.tap.clicked = true;
+      //   }
+      // });
     });
   }
 
@@ -150,11 +166,52 @@ export class Game extends Container {
     enemy.position.set(x, y);
   }
 
+  shoot(deltaMS: number) {
+    this.shootCooldown -= deltaMS;
+    if (this.shootCooldown <= 0) {
+      this.shootCooldown = this.fireRate;
+      this.updateProjectles(click.tap.x, click.tap.y);
+    }
+
+    // this.shootCooldown -= deltaMS;
+    // console.log(this.chosenEnemyType);
+    // if (
+    //   this.chosenEnemy
+    //   // this.enemyContainer.children.includes(this.chosenEnemy)
+    // ) {
+    //   const target = this.enemyContainer.children.find((child) => {
+    //     const enemy = child as Enemy;
+
+    //     enemy.type === this.chosenEnemyType;
+    //   }) as Enemy;
+    //   console.log(target);
+
+    //   if (target) {
+    //     this.chosenEnemy = target;
+    //     if (this.shootCooldown <= 0) {
+    //       this.shootCooldown = this.fireRate;
+    //       this.updateProjectles(click.tap.x, click.tap.y);
+    //     }
+    //     click.tap.x = target.x;
+    //     click.tap.y = target.y;
+    //   } else {
+    //     if (this.shootCooldown <= 0) {
+    //       this.shootCooldown = this.fireRate;
+    //       this.updateProjectles(click.tap.x, click.tap.y);
+    //     }
+    //     this.chosenEnemy = null;
+    //     return;
+    //   }
+    // }
+  }
+
   handleUpdate(deltaMS: number) {
     this.elapsedFrames++;
     if (this.elapsedFrames % 60 === 0) {
       this.spawnEnemies();
     }
+
+    // console.log(this.chosenEnemyType);
     const { x, y } = this;
     const left = x;
     const top = y;
@@ -166,11 +223,7 @@ export class Game extends Container {
     });
 
     if (click.tap.clicked) {
-      this.shootCooldown -= deltaMS;
-      if (this.shootCooldown <= 0) {
-        this.shootCooldown = this.fireRate;
-        this.updateProjectles(click.tap.x, click.tap.y);
-      }
+      this.shoot(deltaMS);
     }
 
     this.enemyContainer.children.forEach((child) => {

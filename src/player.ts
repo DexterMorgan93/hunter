@@ -8,7 +8,7 @@ export class Player extends Container {
   setup() {
     const view = new Graphics();
     view.arc(0, 0, 30, 0, Math.PI * 2);
-    view.fill({ color: "blue" });
+    view.fill({ color: "white" });
     this.addChild(view);
   }
 }
